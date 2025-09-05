@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Fibi online dành riêng cho xửng hấp <3</title>
+<link rel="icon" href="https://i.imgur.com/dLnGoAd.jpg" type="image/png">
+<p style="color:#a361b9"; align="center"> một món quà nhỏ từ @neufukulacuaem</p>
+
+<style>
+body {
+  font-family: 'Playfair Display';
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+@keyframes gradientBG {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+.card {
+  background: rgba(255,255,255,0.9);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  display: inline-block;
+  margin-top: 50px;
+  width: 400px;
+  transition: transform 0.3s;
+}
+.card:hover { transform: scale(1.05); }
+h2 { color: #ff6f91; text-shadow: 2px 2px 5px #fff; }
+input {
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 2px solid #ff6f91;
+  width: 80%;
+  font-size: 16px;
+  text-align: center;
+}
+button {
+  margin-top: 12px;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #fbc2eb, #a6c1ee);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+button:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+#message { font-weight: bold; font-size: 16px; margin-top: 10px; color: #ff6f91; }
+img { max-width: 100%; margin-top: 20px; border-radius: 15px; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.3s; }
+img:hover { transform: scale(1.05); }
+#question { font-size: 20px; font-weight: bold; color: #f54266; }
+#counter {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  color: purple;
+}
+/* nút nhạc */
+#music-toggle {
+  position: fixed;
+  bottom: 15px;
+  left: 15px;
+  width: 55px;
+  height: 55px;
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#music-toggle:hover {
+  transform: scale(1.15);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="quiz-card">
+  <p>nhớ viết thường, đủ dấu, đủ số nha</p>
+  <p id="question"></p>
+  <input type="text" id="answerInput" placeholder="nhớ anh chíp em ly nói gì hông nè">
+  <button id="checkBtn" onclick="checkAnswer()">check đi nè</button>
+  <p id="message"></p>
+  <div id="image-container"></div>
+</div>
+
+
+<!-- Nhạc nền -->
+<audio id="bg-music" autoplay loop>
+  <source src="https://raw.githubusercontent.com/ifiwasacake/ifiwasacake.github.io/main/anodt.mp3",
+"https://raw.githubusercontent.com/ifiwasacake/ifiwasacake.github.io/main/tt.mp3",
+"https://raw.githubusercontent.com/ifiwasacake/ifiwasacake.github.io/main/dcan.mp3">
+</audio>
+
+<!-- Nút bật/tắt nhạc bằng PNG -->
+<img id="music-toggle" src="https://i.imgur.com/xtR4bqZ.png" alt="Music Toggle">
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+const maxVisits = 55;
+const namespace = "fibi-quiz";
+const key = "plays";
+let visitCount = localStorage.getItem('quizVisits') || 0;
+
+
+
+if(visitCount >= maxVisits){
+  document.getElementById('quiz-card').innerHTML = "<h2>ui, fibi của hôm nay hết mất rùi :<</h2><p>hẹn cả nhà vào ngày mai nha!</p>";
+} else {
+  const questions = [
+    {question: "ảnh nhảy lầu luôn rồi, ảnh nhất định...", answer: "không tới với em"},
+    {question: "con thỏ tồi tệ, vô tâm,...", answer: "không có trái tim"},
+    {question: "Phúc năm nay là ... chưa?", answer: "30"},
+    {question: "anh đã bị điếc rồi mà còn ... nữa", answer: "đeo khăn"},
+    {question: "người ta hiểu theo kiểu ... với nhau thôi thì sẽ rất là vui", answer: "anh em bạn bè"},
+    {question: "tại ... jun lâu rồi", answer: "thích"},
+    {question: "cả cộng đồng mạng, cả cuộc đời này ...", answer: "ai cũng biết mà"},
+    {question: "ai là ... của em?", answer: "chú em"}
+  ];
+
+  const images = [
+    "https://i.imgur.com/rjXxMFR.jpg",
+    "https://i.imgur.com/cRLTWCI.jpg",
+    "https://i.imgur.com/Ah4KlEN.jpg",
+    "https://i.imgur.com/wR0ePna.jpg",
+    "https://i.imgur.com/OBmaH7R.jpg",
+    "https://i.imgur.com/sCiavhX.jpg",
+    "https://i.imgur.com/WCYsq0K.jpg",
+    "https://i.imgur.com/8Tdqmsm.jpg",
+    "https://i.imgur.com/r7tNCf2.jpg",
+    "https://i.imgur.com/0WYyS1b.jpg",
+    "https://i.imgur.com/8L83jfE.jpg",
+    "https://i.imgur.com/AaNsi0j.jpg",
+    "https://i.imgur.com/CbSHNWM.jpg",
+    "https://i.imgur.com/LbRgJpg.jpg",
+    "https://i.imgur.com/06GgbQm.jpg",
+    "https://i.imgur.com/v7jNquR.jpg"
+  ];
+
+  const currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+  document.getElementById("question").textContent = currentQuestion.question;
+
+  async function updateCounter(){
+    const res = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+    const data = await res.json();
+    document.getElementById("counter").textContent = `${data.value}/${maxVisits} Fibi đã được nhận 🎁`;
+  }
+
+  function checkAnswer(){
+    const input = document.getElementById("answerInput").value.trim().toLowerCase();
+    const message = document.getElementById("message");
+    const container = document.getElementById("image-container");
+    const button = document.getElementById("checkBtn");
+
+    if(input === currentQuestion.answer.toLowerCase()){
+      message.textContent = "chúc mừng nha, fibi của bạn đâyyyy";
+      const randomImage = images[Math.floor(Math.random() * images.length)];
+      container.innerHTML = `<img src="${randomImage}" alt="Random Image">`;
+
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+      updateCounter();
+
+      button.disabled = true;
+      localStorage.setItem('quizVisits', ++visitCount);
+
+    } else {
+      message.textContent = "ò í e, xem phao lại đi nhaaa";
+      container.innerHTML = "";
+    }
+  }
+}
+
+// Nhạc nền toggle
+const bgMusic = document.getElementById('bg-music');
+const musicToggle = document.getElementById('music-toggle');
+
+musicToggle.addEventListener('click', () => {
+  if (bgMusic.paused) {
+    bgMusic.play();
+    musicToggle.src = "https://i.imgur.com/xtR4bqZ.png"; // ảnh khi nhạc bật
+  } else {
+    bgMusic.pause();
+    musicToggle.src = "https://i.imgur.com/Ytst6cb.png"; // ảnh khi nhạc tắt
+  }
+});
+</script>
+
+<script>
+const audio = document.getElementById('bg-music');
+
+function toggleMusic() {
+  if(audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
+}
+
+// Tự động phát khi load trang
+window.onload = () => {
+  audio.play().catch(() => {
+    console.log("Autoplay bị chặn, click nút để phát nhạc.");
+  });
+};</script>
+
+</body>
+</html>
